@@ -39,21 +39,35 @@ func NewResponseReference(ref string) *Response {
 type responseAlias Response
 
 func (r *Response) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*r = Response{Ref: ref}
+		return nil
+	}
+
 	var alias responseAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*r = Response(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	r.Extensions = extractExtensions(raw, responseKnownFields)
 	return nil
 }
 
 func (r Response) MarshalJSON() ([]byte, error) {
+	if r.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: r.Ref})
+	}
 	alias := responseAlias(r)
 	return marshalWithExtensions(&alias, r.Extensions)
 }

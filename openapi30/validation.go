@@ -157,11 +157,6 @@ func (v *ServerVariable) validate(path string, result *ValidationResult) {
 }
 
 func (p *Paths) validate(path string, result *ValidationResult) {
-	// minProperties: 1 - must have at least one path
-	if len(p.Paths) == 0 && len(p.Extensions) == 0 {
-		result.addError(path, "must contain at least one path")
-	}
-
 	for pathPattern, pathItem := range p.Paths {
 		// Path must start with /
 		if !strings.HasPrefix(pathPattern, "/") {
@@ -174,6 +169,11 @@ func (p *Paths) validate(path string, result *ValidationResult) {
 }
 
 func (p *PathItem) validate(path string, result *ValidationResult) {
+	// Skip validation for references
+	if p.Ref != "" {
+		return
+	}
+
 	// Validate parameters at path level
 	for i, param := range p.Parameters {
 		if param != nil {

@@ -34,21 +34,35 @@ func NewRequestBodyReference(ref string) *RequestBody {
 type requestBodyAlias RequestBody
 
 func (rb *RequestBody) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*rb = RequestBody{Ref: ref}
+		return nil
+	}
+
 	var alias requestBodyAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*rb = RequestBody(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	rb.Extensions = extractExtensions(raw, requestBodyKnownFields)
 	return nil
 }
 
 func (rb RequestBody) MarshalJSON() ([]byte, error) {
+	if rb.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: rb.Ref})
+	}
 	alias := requestBodyAlias(rb)
 	return marshalWithExtensions(&alias, rb.Extensions)
 }

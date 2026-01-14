@@ -41,21 +41,35 @@ func NewSecuritySchemeReference(ref string) *SecurityScheme {
 type securitySchemeAlias SecurityScheme
 
 func (ss *SecurityScheme) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*ss = SecurityScheme{Ref: ref}
+		return nil
+	}
+
 	var alias securitySchemeAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*ss = SecurityScheme(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	ss.Extensions = extractExtensions(raw, securitySchemeKnownFields)
 	return nil
 }
 
 func (ss SecurityScheme) MarshalJSON() ([]byte, error) {
+	if ss.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: ss.Ref})
+	}
 	alias := securitySchemeAlias(ss)
 	return marshalWithExtensions(&alias, ss.Extensions)
 }

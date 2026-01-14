@@ -48,21 +48,35 @@ func NewParameterReference(ref string) *Parameter {
 type parameterAlias Parameter
 
 func (p *Parameter) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*p = Parameter{Ref: ref}
+		return nil
+	}
+
 	var alias parameterAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*p = Parameter(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	p.Extensions = extractExtensions(raw, parameterKnownFields)
 	return nil
 }
 
 func (p Parameter) MarshalJSON() ([]byte, error) {
+	if p.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: p.Ref})
+	}
 	alias := parameterAlias(p)
 	return marshalWithExtensions(&alias, p.Extensions)
 }
@@ -106,21 +120,35 @@ func NewHeaderReference(ref string) *Header {
 type headerAlias Header
 
 func (h *Header) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*h = Header{Ref: ref}
+		return nil
+	}
+
 	var alias headerAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*h = Header(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	h.Extensions = extractExtensions(raw, headerKnownFields)
 	return nil
 }
 
 func (h Header) MarshalJSON() ([]byte, error) {
+	if h.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: h.Ref})
+	}
 	alias := headerAlias(h)
 	return marshalWithExtensions(&alias, h.Extensions)
 }

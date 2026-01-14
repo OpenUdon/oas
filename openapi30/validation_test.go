@@ -40,6 +40,52 @@ func TestValidateMinimalValid(t *testing.T) {
 	}
 }
 
+func TestValidateEmptyPathsAllowed(t *testing.T) {
+	api := &OpenAPI{
+		OpenAPI: "3.0.0",
+		Info: &Info{
+			Title:   "Test API",
+			Version: "1.0.0",
+		},
+		Paths: &Paths{},
+	}
+
+	result := api.Validate()
+	if !result.Valid() {
+		t.Errorf("Expected valid document with empty paths, got errors: %v", result.Error())
+	}
+}
+
+func TestValidateInvalidPathKeyFromJSON(t *testing.T) {
+	data := []byte(`{
+		"openapi": "3.0.0",
+		"info": {"title": "Test", "version": "1.0"},
+		"paths": {
+			"bad": {}
+		}
+	}`)
+
+	var api OpenAPI
+	if err := json.Unmarshal(data, &api); err != nil {
+		t.Fatalf("Failed to unmarshal: %v", err)
+	}
+
+	result := api.Validate()
+	if result.Valid() {
+		t.Fatal("Expected validation error for invalid path key")
+	}
+	found := false
+	for _, err := range result.Errors {
+		if strings.Contains(err.Message, "path must start with /") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("Expected path key error, got: %v", result.Error())
+	}
+}
+
 func TestValidateNilDocument(t *testing.T) {
 	var api *OpenAPI
 	result := api.Validate()
@@ -151,6 +197,25 @@ func TestValidatePathParameterRequired(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("Expected 'path parameters must have required: true' error, got: %v", result.Error())
+	}
+}
+
+func TestValidatePathItemRefSkipsValidation(t *testing.T) {
+	api := &OpenAPI{
+		OpenAPI: "3.0.0",
+		Info:    &Info{Title: "Test", Version: "1.0"},
+		Paths: &Paths{
+			Paths: map[string]*PathItem{
+				"/ref": {
+					Ref: "#/components/pathItems/Example",
+				},
+			},
+		},
+	}
+
+	result := api.Validate()
+	if !result.Valid() {
+		t.Errorf("Expected valid document with $ref path item, got errors: %v", result.Error())
 	}
 }
 

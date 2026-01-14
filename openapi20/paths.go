@@ -47,13 +47,14 @@ func (p *Paths) UnmarshalJSON(data []byte) error {
 				return err
 			}
 			p.Extensions[key] = ext
-		} else if strings.HasPrefix(key, "/") {
-			var pathItem PathItem
-			if err := json.Unmarshal(value, &pathItem); err != nil {
-				return err
-			}
-			p.Paths[key] = &pathItem
+			continue
 		}
+
+		var pathItem PathItem
+		if err := json.Unmarshal(value, &pathItem); err != nil {
+			return err
+		}
+		p.Paths[key] = &pathItem
 	}
 
 	if len(p.Extensions) == 0 {

@@ -35,21 +35,35 @@ func NewExampleReference(ref string) *Example {
 type exampleAlias Example
 
 func (e *Example) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*e = Example{Ref: ref}
+		return nil
+	}
+
 	var alias exampleAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*e = Example(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	e.Extensions = extractExtensions(raw, exampleKnownFields)
 	return nil
 }
 
 func (e Example) MarshalJSON() ([]byte, error) {
+	if e.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: e.Ref})
+	}
 	alias := exampleAlias(e)
 	return marshalWithExtensions(&alias, e.Extensions)
 }

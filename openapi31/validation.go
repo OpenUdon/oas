@@ -73,8 +73,8 @@ func (o *OpenAPI) Validate() *ValidationResult {
 	}
 
 	// At least one of: paths, webhooks, or components
-	hasPaths := o.Paths != nil && len(o.Paths.Paths) > 0
-	hasWebhooks := len(o.Webhooks) > 0
+	hasPaths := o.Paths != nil
+	hasWebhooks := o.Webhooks != nil
 	hasComponents := o.Components != nil
 	if !hasPaths && !hasWebhooks && !hasComponents {
 		result.addError("", "must have at least one of: paths, webhooks, or components")
@@ -500,11 +500,6 @@ func (s *Schema) validate(path string, result *ValidationResult) {
 				result.addError(path+".type", fmt.Sprintf("invalid type '%s'", t))
 			}
 		}
-	}
-
-	// Array type must have items or prefixItems
-	if s.Type != nil && s.Type.Contains("array") && s.Items == nil && len(s.PrefixItems) == 0 {
-		result.addError(path, "array type should have items or prefixItems defined")
 	}
 
 	// Validate numeric constraints

@@ -47,13 +47,14 @@ func (p *Paths) UnmarshalJSON(data []byte) error {
 				return err
 			}
 			p.Extensions[key] = ext
-		} else if strings.HasPrefix(key, "/") {
-			var pathItem PathItem
-			if err := json.Unmarshal(value, &pathItem); err != nil {
-				return err
-			}
-			p.Paths[key] = &pathItem
+			continue
 		}
+
+		var pathItem PathItem
+		if err := json.Unmarshal(value, &pathItem); err != nil {
+			return err
+		}
+		p.Paths[key] = &pathItem
 	}
 
 	if len(p.Extensions) == 0 {
@@ -114,6 +115,11 @@ func (pi *PathItem) UnmarshalJSON(data []byte) error {
 }
 
 func (pi PathItem) MarshalJSON() ([]byte, error) {
+	if pi.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: pi.Ref})
+	}
 	alias := pathItemAlias(pi)
 	return marshalWithExtensions(&alias, pi.Extensions)
 }

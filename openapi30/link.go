@@ -39,21 +39,35 @@ func NewLinkReference(ref string) *Link {
 type linkAlias Link
 
 func (l *Link) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if refValue, ok := raw["$ref"]; ok {
+		var ref string
+		if err := json.Unmarshal(refValue, &ref); err != nil {
+			return err
+		}
+		*l = Link{Ref: ref}
+		return nil
+	}
+
 	var alias linkAlias
 	if err := json.Unmarshal(data, &alias); err != nil {
 		return err
 	}
 	*l = Link(alias)
 
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
 	l.Extensions = extractExtensions(raw, linkKnownFields)
 	return nil
 }
 
 func (l Link) MarshalJSON() ([]byte, error) {
+	if l.Ref != "" {
+		return json.Marshal(struct {
+			Ref string `json:"$ref"`
+		}{Ref: l.Ref})
+	}
 	alias := linkAlias(l)
 	return marshalWithExtensions(&alias, l.Extensions)
 }
