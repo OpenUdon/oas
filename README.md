@@ -2,7 +2,7 @@
 
 Go packages for parsing, manipulating, and validating OpenAPI/Swagger specifications.
 
-[![GoDoc](https://godoc.org/github.com/genelet/oas?status.svg)](https://godoc.org/github.com/genelet/oas)
+[![GoDoc](https://godoc.org/github.com/tabilet/oas?status.svg)](https://godoc.org/github.com/tabilet/oas)
 
 ## Overview
 
@@ -21,13 +21,13 @@ All packages are built directly from the official JSON Schema specifications of 
 
 ```bash
 # Swagger 2.0 (OpenAPI 2.0)
-go get github.com/genelet/oas/openapi20
+go get github.com/tabilet/oas/openapi20
 
 # OpenAPI 3.0
-go get github.com/genelet/oas/openapi30
+go get github.com/tabilet/oas/openapi30
 
 # OpenAPI 3.1
-go get github.com/genelet/oas/openapi31
+go get github.com/tabilet/oas/openapi31
 ```
 
 ## Features
@@ -67,7 +67,7 @@ import (
     "fmt"
     "os"
 
-    "github.com/genelet/oas/openapi31"
+    "github.com/tabilet/oas/openapi31"
 )
 
 func main() {

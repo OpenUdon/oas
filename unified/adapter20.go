@@ -6,7 +6,7 @@ package unified
 import (
 	"strings"
 
-	oa2 "github.com/genelet/oas/openapi20"
+	oa2 "github.com/tabilet/oas/openapi20"
 )
 
 // Document20 wraps an OpenAPI 2.0 document and implements Document

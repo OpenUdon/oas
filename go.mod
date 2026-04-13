@@ -1,3 +1,3 @@
-module github.com/genelet/oas
+module github.com/tabilet/oas
 
 go 1.25.4

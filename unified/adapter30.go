@@ -6,7 +6,7 @@ package unified
 import (
 	"strings"
 
-	oa3 "github.com/genelet/oas/openapi30"
+	oa3 "github.com/tabilet/oas/openapi30"
 )
 
 // Document30 wraps an OpenAPI 3.0 document and implements Document
