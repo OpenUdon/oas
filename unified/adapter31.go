@@ -6,7 +6,7 @@ package unified
 import (
 	"strings"
 
-	oa31 "github.com/tabilet/oas/openapi31"
+	oa31 "github.com/OpenUdon/oas/openapi31"
 )
 
 // Document31 wraps an OpenAPI 3.1 document and implements Document

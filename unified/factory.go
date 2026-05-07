@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"strings"
 
-	oa2 "github.com/tabilet/oas/openapi20"
-	oa3 "github.com/tabilet/oas/openapi30"
-	oa31 "github.com/tabilet/oas/openapi31"
+	oa2 "github.com/OpenUdon/oas/openapi20"
+	oa3 "github.com/OpenUdon/oas/openapi30"
+	oa31 "github.com/OpenUdon/oas/openapi31"
 )
 
 // versionProbe is used to detect OpenAPI version
